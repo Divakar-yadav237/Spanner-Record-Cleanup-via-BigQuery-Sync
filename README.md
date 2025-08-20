@@ -32,7 +32,7 @@ Links:
 
 [1] gcloud beta run deploy Cleanup_spanner_records \
       --source . \
-      --function main \
+      --function sync_deletions \
       --base-image python312 \
       --region us-central1 \
       --allow-unauthenticated \
