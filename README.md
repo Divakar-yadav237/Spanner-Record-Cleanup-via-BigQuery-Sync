@@ -4,6 +4,10 @@
 This Cloud Function identifies and **deletes outdated records from Google Cloud Spanner** by comparing them with a **reference dataset in BigQuery**. 
 It ensures that Spanner only retains records that are still present in BigQuery, helping **maintain data consistency** across systems.
 
+# Architecture Diagram
+
+<img width="1536" height="1024" alt="jpeg" src="https://github.com/user-attachments/assets/428a871e-249c-4ead-9d92-270b34ef9223" />
+
 ## GCP Services Used
 
 1. BigQuery Client API  
