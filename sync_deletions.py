@@ -10,9 +10,9 @@ database = instance.database('developer')
 
 # Fetch all IDs from BigQuery
 def get_all_records_from_bigquery():
-    query = """SELECT DISTINCT Column from BQ table;"""
+    query = """SELECT DISTINCT employee_id from BQ table;"""
     query_job = bq_client.query(query)
-    bq_records= {row['Column'] for row in query_job.result()}  # Return as a set of IDs
+    bq_records= {row['employee_id'] for row in query_job.result()}  # Return as a set of IDs
     print(f"Fetched {len(bq_records)} records from BigQuery")
     return bq_records
 
@@ -25,17 +25,17 @@ def get_all_records_from_spanner_excluding_latest():
     # Query for table1 (Main Table)
     with database.snapshot() as snapshot:
         query_table1 = """
-        select Column from main_table
+        select employee_id from main_table;
         """
         result_table1 = snapshot.execute_sql(query_table1)
         for row in result_table1:
             spanner_ids_list.append(row[0])  # Add each ID to the list directly
-        print(f"Fetched {len(spanner_ids_list)} records from Column (Main Table)")
+        print(f"Fetched {len(spanner_ids_list)} records from employee_id (Main Table)")
 
     # Query for stg_table (Staging Table)
     with database.snapshot() as snapshot:
         query_stg_table = """
-        select Column from STG_table
+        select employee_id from STG_table
         """
         result_stg_table = snapshot.execute_sql(query_stg_table)
         for row in result_stg_table:
@@ -45,7 +45,7 @@ def get_all_records_from_spanner_excluding_latest():
     # Combine both lists into a set to remove duplicates
     spanner_ids = set(spanner_ids_list) | set(stg_spanner_ids_list)  # Using union (|) to combine sets
 
-    print(f"Total combined Spanner records (Column + STG_Column): {len(spanner_ids)}")
+    print(f"Total combined Spanner records (main_table + STG_table): {len(spanner_ids)}")
     return spanner_ids
 
 # Find records in Spanner that are missing in BigQuery
@@ -65,13 +65,13 @@ def delete_records_from_spanner(record_ids_to_delete):
     with database.batch() as batch:
         for Column in record_ids_to_delete:
             batch.delete(
-                table='Column',
-                keyset=spanner.KeySet(keys=[(Column)]),  # Assuming 'id' is the primary key
+                table='main_table',
+                keyset=spanner.KeySet(keys=[(employee_id)]),  # Assuming 'employee_id' is the primary key
             )
             # Deleting from stg_table (Staging Table)
             batch.delete(
-                table='STG_Column',
-                keyset=spanner.KeySet(keys=[(Column)]),  # Assuming 'id' is the primary key
+                table='STG_table',
+                keyset=spanner.KeySet(keys=[(employee_id)]),  # Assuming 'employee_id' is the primary key
             )
     print(f"\nDeleted {len(record_ids_to_delete)} records from Spanner.")
 
